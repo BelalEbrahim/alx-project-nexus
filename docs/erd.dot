@@ -1,0 +1,12 @@
+<xaiArtifact artifact_id="0465f6fe-b197-403e-b21e-b8a428316206" artifact_version_id="511a0a90-68d6-43d4-8350-e7e40b87da86" title="erd.dot" contentType="text/plain">
+digraph ERD {
+  rankdir=LR;
+  node [shape=box, style=filled, fillcolor=lightblue];
+
+  User [label="User\nid: PK\nusername: VARCHAR\nemail: VARCHAR\npassword: VARCHAR"];
+  Category [label="Category\nid: PK\nname: VARCHAR(100)\ndescription: TEXT\ncreated_at: DATETIME"];
+  Product [label="Product\nid: PK\nname: VARCHAR(200)\ndescription: TEXT\nprice: DECIMAL\nstock: INTEGER\ncategory_id: FK\ncreated_at: DATETIME"];
+
+  Category -> Product [label="1:N"];
+}
+</xaiArtifact>
