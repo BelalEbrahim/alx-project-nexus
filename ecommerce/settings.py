@@ -2,11 +2,14 @@ import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
+from dotenv import load_dotenv
+
+load_dotenv()  # Load .env for local development
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'your-secret-key')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # Default to False for production
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key-for-local')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
 INSTALLED_APPS = [
@@ -50,7 +53,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'ecommerce.urls'
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -69,11 +71,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-# Database configuration for Render
+# Database (Neon)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
-        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+        'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=True)
     }
 else:
     DATABASES = {
@@ -87,7 +89,7 @@ else:
         }
     }
 
-# Redis configuration for Render
+# Redis (Upstash)
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -98,15 +100,19 @@ CACHES = {
     }
 }
 
-# Celery configuration for Render
+# Celery (disabled in free tier)
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
 CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-# Email configuration for production
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# PostmarkApp email configuration
+POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN', '')
+POSTMARK_SENDER_EMAIL = os.environ.get('POSTMARK_SENDER_EMAIL', 'no-reply@your-domain.com')
+
+# Fallback email (not used with Postmark, kept for local testing)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Local fallback
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
