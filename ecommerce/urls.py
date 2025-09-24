@@ -5,7 +5,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from django.views.generic import RedirectView
+from django.http import JsonResponse  # New for health check
 from catalog.views import CategoryViewSet, ProductViewSet
+
+def health_check(request):
+    return JsonResponse({'status': 'ok'})  # Test route for functionality
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -24,10 +28,12 @@ router.register(r'categories', CategoryViewSet)
 router.register(r'products', ProductViewSet)
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/api/docs/')),  # Redirect root to Swagger
-    path('admin/', admin.site.urls),
-    path('api/', include(router.urls)),
+    path('', RedirectView.as_view(url='/api/docs/')),  # Root redirect
+    path('admin/', admin.site.urls),  # Admin dashboard
+    path('admin/login/', admin.site.login, name='admin_login'),  # Explicit admin login route
+    path('api/', include(router.urls)),  # API endpoints
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('health/', health_check, name='health_check'),  # Test route for functionality
 ]
