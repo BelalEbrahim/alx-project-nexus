@@ -9,8 +9,8 @@ load_dotenv()  # Load .env for local development
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key-for-local')  # Fallback for local
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # Set to False in production
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.up.railway.app', '.onrender.com']  # Add Railway domain
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # False in production
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1,.up.railway.app').split(',')  # Use env var for all hosts
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -71,7 +71,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-# Database (Neon or local)
+# Database (Railway or local)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -89,7 +89,7 @@ else:
         }
     }
 
-# Redis (Upstash or local)
+# Redis (Railway or local)
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -104,7 +104,7 @@ CACHES = {
 POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN', '')
 POSTMARK_SENDER_EMAIL = os.environ.get('POSTMARK_SENDER_EMAIL', 'no-reply@your-domain.com')
 
-# Celery configuration for Render (disabled for free tier; enable with paid plan)
+# Celery configuration (disabled for Railway free tier; enable with paid plan)
 # CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
 # CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
 # CELERY_ACCEPT_CONTENT = ['json']
@@ -138,3 +138,15 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Production Security Settings
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
