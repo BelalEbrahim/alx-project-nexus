@@ -9,8 +9,8 @@ load_dotenv()  # Load .env for local development
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key-for-local')  # Fallback for local
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # False in production
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # Set to False in production
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.up.railway.app', '.onrender.com']  # Add Railway domain
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -35,14 +35,6 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
     ],
-    'DEFAULT_THROTTLE_CLASSES': [
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
-    ],
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': '100/day',
-        'user': '1000/day',
-    },
 }
 
 SIMPLE_JWT = {
@@ -112,7 +104,7 @@ CACHES = {
 POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN', '')
 POSTMARK_SENDER_EMAIL = os.environ.get('POSTMARK_SENDER_EMAIL', 'no-reply@your-domain.com')
 
-# Celery (disabled for Render free tier; enable with paid plan)
+# Celery configuration for Render (disabled for free tier; enable with paid plan)
 # CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
 # CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
 # CELERY_ACCEPT_CONTENT = ['json']
