@@ -8,8 +8,8 @@ load_dotenv()  # Load .env for local development
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key-for-local')
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key-for-local')  # Fallback for local
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'  # False in production
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
 
 INSTALLED_APPS = [
@@ -35,6 +35,14 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.OrderingFilter',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day',
+    },
 }
 
 SIMPLE_JWT = {
@@ -71,7 +79,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce.wsgi.application'
 
-# Database (Neon)
+# Database (Neon or local)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
     DATABASES = {
@@ -89,7 +97,7 @@ else:
         }
     }
 
-# Redis (Upstash)
+# Redis (Upstash or local)
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -100,24 +108,16 @@ CACHES = {
     }
 }
 
-# Celery (disabled in free tier)
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-
-# PostmarkApp email configuration
+# PostmarkApp configuration
 POSTMARK_API_TOKEN = os.environ.get('POSTMARK_API_TOKEN', '')
 POSTMARK_SENDER_EMAIL = os.environ.get('POSTMARK_SENDER_EMAIL', 'no-reply@your-domain.com')
 
-# Fallback email (not used with Postmark, kept for local testing)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Local fallback
-EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+# Celery (disabled for Render free tier; enable with paid plan)
+# CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
+# CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://127.0.0.1:6380/1')
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
 
 SWAGGER_SETTINGS = {
     'USE_COMPAT_RENDERERS': False,
@@ -142,10 +142,7 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
-# Static files for production
-STATIC_URL = '/static/'
+STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

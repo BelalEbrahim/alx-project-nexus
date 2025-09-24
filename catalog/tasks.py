@@ -1,11 +1,9 @@
-# catalog/tasks.py
 from celery import shared_task
 from postmarker.core import PostmarkClient
 import os
 
 @shared_task
 def send_product_creation_email(product_id):
-    # Placeholder: Replace with your actual product model import
     from .models import Product
 
     product = Product.objects.get(id=product_id)
