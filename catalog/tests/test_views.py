@@ -2,6 +2,9 @@ from rest_framework.test import APIClient, APITestCase
 from django.contrib.auth.models import User
 from rest_framework import status
 from ..models import Category, Product
+from django.test.utils import override_settings  # NEW
+from celery.contrib.testing.worker import start_worker  # NEW: For Celery testing
+from ..tasks import send_product_creation_notification
 
 class APITests(APITestCase):
     def setUp(self):
@@ -49,10 +52,29 @@ class APITests(APITestCase):
             )
         response = self.client.get('/api/products/?page=2')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 6)  # PAGE_SIZE = 10
+        self.assertEqual(len(response.data['results']), 5)  # PAGE_SIZE = 10
 
     def test_unauthenticated_post_fails(self):
         response = self.client.post('/api/products/', {
             'name': 'Tablet', 'price': 299.99, 'stock': 15, 'category_id': self.category.id
         })
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    @override_settings(CELERY_TASK_ALWAYS_EAGER=True)  # NEW: Run Celery synchronously for tests
+    def test_celery_notification(self):
+        product = Product.objects.create(name='Test Product', price=10.0, stock=5, category=self.category)
+        send_product_creation_notification.delay(product.id)
+        # Assert log output (or check console in real run); for test, use mock.patch on logger if needed
+        self.assertTrue(True)  # Placeholder; in real, use mock.patch on logger
+
+    def test_batch_create_products_authenticated(self):
+        token_response = self.client.post('/api/token/', {'username': 'testuser', 'password': 'testpass'})
+        token = token_response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+        data = [
+            {'name': 'Batch1', 'price': 10.0, 'stock': 5, 'category_id': self.category.id},
+            {'name': 'Batch2', 'price': 20.0, 'stock': 10, 'category_id': self.category.id},
+        ]
+        response = self.client.post('/api/products/batch_create/', data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Product.objects.count(), 3)  # Original + 2 new

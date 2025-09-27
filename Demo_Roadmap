@@ -1,0 +1,28 @@
+docker-compose up --build
+
+docker-compose exec db psql -U postgres -d ecommerce_db
+
+docker-compose exec redis redis-cli
+
+docker-compose logs celery
+
+-----------------------------------------------------------------
+
+APIs
+
+POST http://127.0.0.1:8000/api/categories/
+
+
+{
+    "username": "testuser",
+    "password": "testpass"
+}
+
+
+{
+    "name": "Laptop",
+    "price": 2.9,
+    "stock": 4,
+    "category_id": 1
+
+}
