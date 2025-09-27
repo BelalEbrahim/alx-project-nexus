@@ -1,9 +1,3 @@
-Nice — I converted your README content into a polished, GitHub-ready `README.md`. It’s organized, uses proper Markdown (TOC, code blocks, headings), and includes examples and commands ready to copy/paste.
-
-Copy the text below into your repo as `README.md`.
-
----
-
 # Project Nexus — E-Commerce Backend (Django + DRF)
 
 > Backend API for an e-commerce product catalog built as a capstone for the ProDev Backend Engineering program (Project Nexus).
